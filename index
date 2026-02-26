@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mens Sana - DASS-42</title>
+    <title>Mens Sana - DASS-42 com Subescalas</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
             border-radius: 15px;
@@ -122,10 +122,16 @@
             text-align: center;
         }
         
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
         .card-resultado {
-            display: inline-block;
-            width: calc(33.33% - 14px);
-            margin: 0 7px;
+            flex: 1 1 180px;
             padding: 15px;
             background: white;
             border-radius: 8px;
@@ -154,6 +160,38 @@
             display: inline-block;
         }
         
+        h3 {
+            margin: 20px 0 10px;
+            color: #333;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            font-weight: 600;
+            text-align: left;
+        }
+        
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
         .aviso {
             margin-top: 20px;
             padding: 15px;
@@ -175,9 +213,8 @@
         }
         
         @media (max-width: 600px) {
-            .card-resultado {
-                width: 100%;
-                margin: 0 0 15px 0;
+            .cards {
+                flex-direction: column;
             }
         }
     </style>
@@ -185,22 +222,17 @@
 <body>
     <div class="container">
         <h1>Mens Sana</h1>
-        <div class="subtitle">Escala de Depressão, Ansiedade e Estresse (DASS-42)</div>
+        <div class="subtitle">Escala de Depressão, Ansiedade e Estresse (DASS-42) com Subescalas</div>
         
         <form id="dassForm">
-            <!-- As questões serão inseridas aqui pelo JavaScript -->
             <div id="questoes-container"></div>
-            
             <button type="button" onclick="calcularDASS()">Ver Resultados</button>
         </form>
         
-        <div id="resultados" style="display: none;">
-            <!-- Resultados serão preenchidos dinamicamente -->
-        </div>
+        <div id="resultados" style="display: none;"></div>
         
         <div class="aviso-legal">
-            <p>⚠️ Esta ferramenta é apenas para fins de triagem e não substitui uma avaliação profissional. Os resultados devem ser interpretados por um profissional de saúde mental qualificado [citation:3][citation:5].</p>
-            <p>© Baseado no DASS-42 desenvolvido por Lovibond & Lovibond (1995) [citation:8].</p>
+            <p>⚠️ Esta ferramenta é apenas para fins de triagem e não substitui uma avaliação profissional. Baseado no DASS-42 (Lovibond & Lovibond, 1995).</p>
         </div>
     </div>
 
@@ -251,14 +283,14 @@
             "42. Senti que era difícil continuar"
         ];
 
-        // Mapeamento dos itens por subescala (usando índices 0-based)
-        const escalas = {
-            depressao: [2, 4, 9, 12, 15, 16, 20, 23, 25, 30, 33, 36, 37, 41], // itens originais: 3,5,10,13,16,17,21,24,26,31,34,37,38,42
-            ansiedade: [1, 3, 6, 8, 14, 18, 19, 22, 24, 27, 29, 35, 39, 40], // itens originais: 2,4,7,9,15,19,20,23,25,28,30,36,40,41
-            estresse: [0, 5, 7, 10, 11, 13, 17, 21, 26, 28, 31, 32, 34, 38] // itens originais: 1,6,8,11,12,14,18,22,27,29,32,33,35,39
+        // Mapeamento dos itens por escala principal (índices 0-based)
+        const escalasPrincipais = {
+            depressao: [2, 4, 9, 12, 15, 16, 20, 23, 25, 30, 33, 36, 37, 41], // itens 3,5,10,13,16,17,21,24,26,31,34,37,38,42
+            ansiedade: [1, 3, 6, 8, 14, 18, 19, 22, 24, 27, 29, 35, 39, 40],   // itens 2,4,7,9,15,19,20,23,25,28,30,36,40,41
+            estresse:  [0, 5, 7, 10, 11, 13, 17, 21, 26, 28, 31, 32, 34, 38]    // itens 1,6,8,11,12,14,18,22,27,29,32,33,35,39
         };
 
-        // Tabela de classificação [citation:5][citation:9]
+        // Tabela de classificação (pontos de corte)
         const classificacao = {
             depressao: [
                 { max: 9, label: 'Normal' },
@@ -281,6 +313,28 @@
                 { min: 26, max: 33, label: 'Severo' },
                 { min: 34, label: 'Extremamente Severo' }
             ]
+        };
+
+        // ========== Subescalas (aproximadas, baseadas na descrição conceitual) ==========
+        const subescalas = {
+            depressao: {
+                disforia: [12, 15, 25, 30],          // itens 13,16,26,31
+                desesperanca: [9, 20, 37],            // itens 10,21,38
+                desvalorizacao: [2, 4, 33],           // itens 3,5,34
+                autodepreciacao: [16, 36, 41],        // itens 17,37,42
+                faltaInteresse: [23, 40]              // itens 24,41 (anedonia/inércia)
+            },
+            ansiedade: {
+                excitacaoAutonomica: [1, 3, 6, 8, 14, 18, 19, 22, 24, 27, 29, 35, 39, 40], // todos os 14 itens (para referência)
+                muscular: [6],                         // item 7 (tremores)
+                situacional: [8, 27, 29],              // itens 9,28,30
+                subjetiva: [14, 18, 19, 35, 39, 40]    // itens 15,19,20,36,40,41
+            },
+            estresse: {
+                dificuldadeRelaxar: [11, 21, 26, 28, 31, 32], // itens 12,22,27,29,32,33
+                agitado: [5, 7, 10, 13, 17, 34, 38],          // itens 6,8,11,14,18,35,39
+                irritavel: [0, 12, 17, 31, 34, 38]            // itens 1,13,18,32,35,39
+            }
         };
 
         // Renderizar questões ao carregar a página
@@ -339,187 +393,111 @@
             return 'Não classificado';
         }
 
+        // Função para calcular todas as subescalas
+        function calcularSubescalas(respostas) {
+            const resultados = {};
+            for (let escala in subescalas) {
+                resultados[escala] = {};
+                for (let sub in subescalas[escala]) {
+                    const itens = subescalas[escala][sub];
+                    let bruto = 0;
+                    itens.forEach(i => bruto += respostas[i]);
+                    const nItens = itens.length;
+                    const maxPossivel = nItens * 3;
+                    const normalizado = (bruto / maxPossivel) * 10;
+                    resultados[escala][sub] = {
+                        bruto: bruto,
+                        normalizado: normalizado.toFixed(1)
+                    };
+                }
+            }
+            return resultados;
+        }
+
         // Função principal de cálculo
         function calcularDASS() {
-            const form = document.getElementById('dassForm');
+            // Coletar respostas
             const respostas = [];
-            
-            // Coletar todas as respostas
             for (let i = 0; i < 42; i++) {
                 const radios = document.getElementsByName(`q${i}`);
                 let selecionado = null;
-                
                 for (let radio of radios) {
                     if (radio.checked) {
                         selecionado = parseInt(radio.value);
                         break;
                     }
                 }
-                
                 if (selecionado === null) {
                     alert(`Por favor, responda a questão ${i+1} antes de ver os resultados.`);
                     return;
                 }
-                
                 respostas.push(selecionado);
             }
-            
-            // Calcular escores por subescala
+
+            // Calcular escores principais
             let escoreDepressao = 0, escoreAnsiedade = 0, escoreEstresse = 0;
-            
-            escalas.depressao.forEach(i => escoreDepressao += respostas[i]);
-            escalas.ansiedade.forEach(i => escoreAnsiedade += respostas[i]);
-            escalas.estresse.forEach(i => escoreEstresse += respostas[i]);
-            
-            // Classificar
+            escalasPrincipais.depressao.forEach(i => escoreDepressao += respostas[i]);
+            escalasPrincipais.ansiedade.forEach(i => escoreAnsiedade += respostas[i]);
+            escalasPrincipais.estresse.forEach(i => escoreEstresse += respostas[i]);
+
             const classDepressao = classificarEscore(escoreDepressao, 'depressao');
             const classAnsiedade = classificarEscore(escoreAnsiedade, 'ansiedade');
             const classEstresse = classificarEscore(escoreEstresse, 'estresse');
-            
+
+            // Calcular subescalas
+            const subResultados = calcularSubescalas(respostas);
+
             // Exibir resultados
             const divResultados = document.getElementById('resultados');
             divResultados.style.display = 'block';
-            
+
+            // Gerar HTML das subescalas
+            let htmlSubescalas = '';
+            for (let escala in subResultados) {
+                const nomeEscala = escala.charAt(0).toUpperCase() + escala.slice(1);
+                htmlSubescalas += `<h3>${nomeEscala}</h3>`;
+                htmlSubescalas += '<table><tr><th>Subescala</th><th>Bruto</th><th>Normalizado (0-10)</th></tr>';
+                for (let sub in subResultados[escala]) {
+                    // Formatar nome da subescala (ex: "faltaInteresse" -> "Falta Interesse")
+                    const nomeSub = sub.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    htmlSubescalas += `<tr><td>${nomeSub}</td><td>${subResultados[escala][sub].bruto}</td><td>${subResultados[escala][sub].normalizado}</td></tr>`;
+                }
+                htmlSubescalas += '</table>';
+            }
+
             divResultados.innerHTML = `
                 <div class="resultados">
-                    <h2>Seus Resultados</h2>
-                    
-                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                    <h2>Resultados Principais</h2>
+                    <div class="cards">
                         <div class="card-resultado">
                             <h3>Depressão</h3>
                             <div class="escore">${escoreDepressao}</div>
-                            <div class="classificacao" style="background: #e3f2fd; color: #1976d2;">${classDepressao}</div>
+                            <div class="classificacao">${classDepressao}</div>
                         </div>
-                        
                         <div class="card-resultado">
                             <h3>Ansiedade</h3>
                             <div class="escore">${escoreAnsiedade}</div>
-                            <div class="classificacao" style="background: #fce4ec; color: #c2185b;">${classAnsiedade}</div>
+                            <div class="classificacao">${classAnsiedade}</div>
                         </div>
-                        
                         <div class="card-resultado">
                             <h3>Estresse</h3>
                             <div class="escore">${escoreEstresse}</div>
-                            <div class="classificacao" style="background: #e8f5e8; color: #388e3c;">${classEstresse}</div>
+                            <div class="classificacao">${classEstresse}</div>
                         </div>
                     </div>
                     
+                    <h3 style="margin-top:30px;">Detalhamento por Subescalas</h3>
+                    ${htmlSubescalas}
+                    
                     <div class="aviso">
-                        <strong>⚠️ Importante:</strong> Esta é uma ferramenta de triagem. Consulte um profissional de saúde mental para uma avaliação completa. Resultados elevados podem indicar necessidade de apoio profissional [citation:3].
+                        <strong>⚠️ Importante:</strong> Esta é uma ferramenta de triagem. Consulte um profissional de saúde mental para uma avaliação completa. As subescalas apresentadas são aproximações baseadas na descrição conceitual e podem não refletir a estrutura fatorial exata validada no manual oficial do DASS.
                     </div>
                 </div>
             `;
-            
-            // Scroll suave até os resultados
+
+            // Rolagem suave até os resultados
             divResultados.scrollIntoView({ behavior: 'smooth' });
-            
-            // Aqui você pode adicionar a lógica de salvar no banco de dados
-            console.log('Respostas:', respostas);
-            console.log('Escore Depressão:', escoreDepressao, classDepressao);
-            console.log('Escore Ansiedade:', escoreAnsiedade, classAnsiedade);
-            console.log('Escore Estresse:', escoreEstresse, classEstresse);
         }
-     // ... (todo o código anterior permanece igual até a definição das escalas principais)
-
-    // ========== NOVO: Definição das subescalas ==========
-    const subescalas = {
-        depressao: {
-            disforia: [12, 15, 25, 30],          // itens 13,16,26,31
-            desesperanca: [9, 20, 37],            // itens 10,21,38
-            desvalorizacao: [2, 4, 33],           // itens 3,5,34
-            autodepreciacao: [16, 36, 41],        // itens 17,37,42
-            faltaInteresse: [23, 40]              // itens 24,41 (anedonia/inércia)
-        },
-        ansiedade: {
-            excitacaoAutonomica: [1, 3, 6, 8, 14, 18, 19, 22, 24, 27, 29, 35, 39, 40], // todos os 14 itens
-            muscular: [6],                         // item 7 (tremores)
-            situacional: [8, 27, 29],              // itens 9,28,30
-            subjetiva: [14, 18, 19, 35, 39, 40]    // itens 15,19,20,36,40,41
-        },
-        estresse: {
-            dificuldadeRelaxar: [11, 21, 26, 28, 31, 32], // itens 12,22,27,29,32,33
-            agitado: [5, 7, 10, 13, 17, 34, 38],          // itens 6,8,11,14,18,35,39
-            irritavel: [0, 12, 17, 31, 34, 38]            // itens 1,13,18,32,35,39
-        }
-    };
-
-    // Função que calcula todas as subescalas
-    function calcularSubescalas(respostas) {
-        const resultados = {};
-        for (let escala in subescalas) {
-            resultados[escala] = {};
-            for (let sub in subescalas[escala]) {
-                const itens = subescalas[escala][sub];
-                let bruto = 0;
-                itens.forEach(i => bruto += respostas[i]);
-                const nItens = itens.length;
-                const maxPossivel = nItens * 3;
-                const normalizado = (bruto / maxPossivel) * 10;
-                resultados[escala][sub] = {
-                    bruto: bruto,
-                    normalizado: normalizado.toFixed(1) // uma casa decimal
-                };
-            }
-        }
-        return resultados;
-    }
-
-    // Modifique a função calcularDASS() para incluir as subescalas
-    function calcularDASS() {
-        // ... (coleta das respostas igual ao código anterior)
-
-        // Calcular escores principais (já existente)
-        // ...
-
-        // NOVO: Calcular subescalas
-        const subResultados = calcularSubescalas(respostas);
-
-        // Exibir resultados (substitua o bloco de exibição anterior por este)
-        const divResultados = document.getElementById('resultados');
-        divResultados.style.display = 'block';
-        
-        let htmlSubescalas = '';
-        for (let escala in subResultados) {
-            htmlSubescalas += `<h4 style="margin-top:20px;">${escala.charAt(0).toUpperCase() + escala.slice(1)}</h4>`;
-            htmlSubescalas += '<table style="width:100%; border-collapse:collapse; margin-bottom:15px;">';
-            htmlSubescalas += '<tr><th style="text-align:left; border-bottom:1px solid #ddd;">Subescala</th><th style="text-align:center; border-bottom:1px solid #ddd;">Bruto</th><th style="text-align:center; border-bottom:1px solid #ddd;">Normalizado (0-10)</th></tr>';
-            for (let sub in subResultados[escala]) {
-                const subNome = sub.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // formata nome
-                htmlSubescalas += `<tr><td style="padding:5px 0;">${subNome}</td><td style="text-align:center;">${subResultados[escala][sub].bruto}</td><td style="text-align:center;">${subResultados[escala][sub].normalizado}</td></tr>`;
-            }
-            htmlSubescalas += '</table>';
-        }
-
-        divResultados.innerHTML = `
-            <div class="resultados">
-                <h2>Resultados Principais</h2>
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
-                    <div class="card-resultado">
-                        <h3>Depressão</h3>
-                        <div class="escore">${escoreDepressao}</div>
-                        <div class="classificacao">${classDepressao}</div>
-                    </div>
-                    <div class="card-resultado">
-                        <h3>Ansiedade</h3>
-                        <div class="escore">${escoreAnsiedade}</div>
-                        <div class="classificacao">${classAnsiedade}</div>
-                    </div>
-                    <div class="card-resultado">
-                        <h3>Estresse</h3>
-                        <div class="escore">${escoreEstresse}</div>
-                        <div class="classificacao">${classEstresse}</div>
-                    </div>
-                </div>
-                
-                <h3 style="margin-top:30px;">Detalhamento por Subescalas</h3>
-                ${htmlSubescalas}
-                
-                <div class="aviso">
-                    <strong>⚠️ Importante:</strong> Esta é uma ferramenta de triagem. Consulte um profissional de saúde mental para uma avaliação completa.
-                </div>
-            </div>
-        `;
-    }
-</script>
+    </script>
 </body>
 </html>
