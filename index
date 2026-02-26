@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mens Sana - DASS-42</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        .questao {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .questao p {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .opcoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .opcao {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .opcao label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .opcao input[type="radio"] {
+            accent-color: #667eea;
+        }
+        
+        .opcao label:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+        
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 30px 0 20px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5a67d8;
+        }
+        
+        .resultados {
+            background: #f0f4ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #667eea;
+        }
+        
+        .resultados h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .card-resultado {
+            display: inline-block;
+            width: calc(33.33% - 14px);
+            margin: 0 7px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .card-resultado h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .escore {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin: 10px 0;
+        }
+        
+        .classificacao {
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #f0f0f0;
+            display: inline-block;
+        }
+        
+        .aviso {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 8px;
+            color: #856404;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .aviso-legal {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .card-resultado {
+                width: 100%;
+                margin: 0 0 15px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mens Sana</h1>
+        <div class="subtitle">Escala de Depressão, Ansiedade e Estresse (DASS-42)</div>
+        
+        <form id="dassForm">
+            <!-- As questões serão inseridas aqui pelo JavaScript -->
+            <div id="questoes-container"></div>
+            
+            <button type="button" onclick="calcularDASS()">Ver Resultados</button>
+        </form>
+        
+        <div id="resultados" style="display: none;">
+            <!-- Resultados serão preenchidos dinamicamente -->
+        </div>
+        
+        <div class="aviso-legal">
+            <p>⚠️ Esta ferramenta é apenas para fins de triagem e não substitui uma avaliação profissional. Os resultados devem ser interpretados por um profissional de saúde mental qualificado [citation:3][citation:5].</p>
+            <p>© Baseado no DASS-42 desenvolvido por Lovibond & Lovibond (1995) [citation:8].</p>
+        </div>
+    </div>
+
+    <script>
+        // Lista completa das 42 questões do DASS-42
+        const questoes = [
+            "1. Tive dificuldade em me acalmar",
+            "2. Senti minha boca seca",
+            "3. Não consegui experimentar nenhum sentimento positivo",
+            "4. Tive dificuldade em respirar (ex: respiração muito rápida, falta de ar sem esforço físico)",
+            "5. Tive dificuldade em ter iniciativa para fazer as coisas",
+            "6. Tive tendência a reagir exageradamente às situações",
+            "7. Senti tremores (ex: nas mãos)",
+            "8. Senti que estava nervoso",
+            "9. Preocupei-me com situações em que poderia entrar em pânico e fazer papel de bobo",
+            "10. Senti que não tinha nada a esperar do futuro",
+            "11. Senti-me agitado",
+            "12. Senti dificuldade em relaxar",
+            "13. Senti-me desanimado e melancólico",
+            "14. Senti intolerância com qualquer coisa que me impedisse de continuar o que estava fazendo",
+            "15. Senti que ia entrar em pânico",
+            "16. Não fui capaz de me entusiasmar com nada",
+            "17. Senti que não valia muito como pessoa",
+            "18. Senti que estava muito sensível",
+            "19. Senti o coração bater forte sem ter feito esforço físico",
+            "20. Senti medo sem razão",
+            "21. Senti que a vida não tinha sentido",
+            "22. Senti dificuldade para descansar",
+            "23. Tive dificuldade em engolir",
+            "24. Senti que não conseguia ter prazer com as coisas que fiz",
+            "25. Senti alterações no meu corpo (ex: sudorese) sem esforço físico",
+            "26. Senti-me triste e deprimido",
+            "27. Senti que estava muito inquieto",
+            "28. Senti que estava prestes a entrar em pânico",
+            "29. Senti dificuldade em me acalmar após me aborrecer",
+            "30. Tive medo de ficar 'bloqueado' em lugares cheios",
+            "31. Senti que não tinha vontade de fazer nada",
+            "32. Senti-me irritável",
+            "33. Senti tensão muscular",
+            "34. Senti que era indigno",
+            "35. Não suportei ser interrompido quando estava ocupado",
+            "36. Senti que ia desmaiar",
+            "37. Senti-me amedrontado",
+            "38. Senti que a vida não valia a pena",
+            "39. Senti-me facilmente contrariado",
+            "40. Senti o coração falhando (mesmo sem esforço)",
+            "41. Senti-me assustado sem motivo",
+            "42. Senti que era difícil continuar"
+        ];
+
+        // Mapeamento dos itens por subescala (usando índices 0-based)
+        const escalas = {
+            depressao: [2, 4, 9, 12, 15, 16, 20, 23, 25, 30, 33, 36, 37, 41], // itens originais: 3,5,10,13,16,17,21,24,26,31,34,37,38,42
+            ansiedade: [1, 3, 6, 8, 14, 18, 19, 22, 24, 27, 29, 35, 39, 40], // itens originais: 2,4,7,9,15,19,20,23,25,28,30,36,40,41
+            estresse: [0, 5, 7, 10, 11, 13, 17, 21, 26, 28, 31, 32, 34, 38] // itens originais: 1,6,8,11,12,14,18,22,27,29,32,33,35,39
+        };
+
+        // Tabela de classificação [citation:5][citation:9]
+        const classificacao = {
+            depressao: [
+                { max: 9, label: 'Normal' },
+                { min: 10, max: 13, label: 'Leve' },
+                { min: 14, max: 20, label: 'Moderado' },
+                { min: 21, max: 27, label: 'Severo' },
+                { min: 28, label: 'Extremamente Severo' }
+            ],
+            ansiedade: [
+                { max: 7, label: 'Normal' },
+                { min: 8, max: 9, label: 'Leve' },
+                { min: 10, max: 14, label: 'Moderado' },
+                { min: 15, max: 19, label: 'Severo' },
+                { min: 20, label: 'Extremamente Severo' }
+            ],
+            estresse: [
+                { max: 14, label: 'Normal' },
+                { min: 15, max: 18, label: 'Leve' },
+                { min: 19, max: 25, label: 'Moderado' },
+                { min: 26, max: 33, label: 'Severo' },
+                { min: 34, label: 'Extremamente Severo' }
+            ]
+        };
+
+        // Renderizar questões ao carregar a página
+        window.onload = function() {
+            const container = document.getElementById('questoes-container');
+            
+            questoes.forEach((questao, index) => {
+                const divQuestao = document.createElement('div');
+                divQuestao.className = 'questao';
+                
+                const p = document.createElement('p');
+                p.textContent = questao;
+                divQuestao.appendChild(p);
+                
+                const divOpcoes = document.createElement('div');
+                divOpcoes.className = 'opcoes';
+                
+                // Opções 0, 1, 2, 3
+                [0, 1, 2, 3].forEach(valor => {
+                    const divOpcao = document.createElement('div');
+                    divOpcao.className = 'opcao';
+                    
+                    const label = document.createElement('label');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = `q${index}`;
+                    radio.value = valor;
+                    radio.required = true;
+                    
+                    let texto;
+                    if (valor === 0) texto = '0 - Não se aplicou';
+                    else if (valor === 1) texto = '1 - Em algum grau';
+                    else if (valor === 2) texto = '2 - Consideravelmente';
+                    else texto = '3 - Muitíssimo';
+                    
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(texto));
+                    
+                    divOpcao.appendChild(label);
+                    divOpcoes.appendChild(divOpcao);
+                });
+                
+                divQuestao.appendChild(divOpcoes);
+                container.appendChild(divQuestao);
+            });
+        };
+
+        // Função para classificar um escore
+        function classificarEscore(escore, tipo) {
+            const regras = classificacao[tipo];
+            for (let regra of regras) {
+                if (regra.min === undefined && escore <= regra.max) return regra.label;
+                if (regra.min !== undefined && regra.max !== undefined && escore >= regra.min && escore <= regra.max) return regra.label;
+                if (regra.min !== undefined && regra.max === undefined && escore >= regra.min) return regra.label;
+            }
+            return 'Não classificado';
+        }
+
+        // Função principal de cálculo
+        function calcularDASS() {
+            const form = document.getElementById('dassForm');
+            const respostas = [];
+            
+            // Coletar todas as respostas
+            for (let i = 0; i < 42; i++) {
+                const radios = document.getElementsByName(`q${i}`);
+                let selecionado = null;
+                
+                for (let radio of radios) {
+                    if (radio.checked) {
+                        selecionado = parseInt(radio.value);
+                        break;
+                    }
+                }
+                
+                if (selecionado === null) {
+                    alert(`Por favor, responda a questão ${i+1} antes de ver os resultados.`);
+                    return;
+                }
+                
+                respostas.push(selecionado);
+            }
+            
+            // Calcular escores por subescala
+            let escoreDepressao = 0, escoreAnsiedade = 0, escoreEstresse = 0;
+            
+            escalas.depressao.forEach(i => escoreDepressao += respostas[i]);
+            escalas.ansiedade.forEach(i => escoreAnsiedade += respostas[i]);
+            escalas.estresse.forEach(i => escoreEstresse += respostas[i]);
+            
+            // Classificar
+            const classDepressao = classificarEscore(escoreDepressao, 'depressao');
+            const classAnsiedade = classificarEscore(escoreAnsiedade, 'ansiedade');
+            const classEstresse = classificarEscore(escoreEstresse, 'estresse');
+            
+            // Exibir resultados
+            const divResultados = document.getElementById('resultados');
+            divResultados.style.display = 'block';
+            
+            divResultados.innerHTML = `
+                <div class="resultados">
+                    <h2>Seus Resultados</h2>
+                    
+                    <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                        <div class="card-resultado">
+                            <h3>Depressão</h3>
+                            <div class="escore">${escoreDepressao}</div>
+                            <div class="classificacao" style="background: #e3f2fd; color: #1976d2;">${classDepressao}</div>
+                        </div>
+                        
+                        <div class="card-resultado">
+                            <h3>Ansiedade</h3>
+                            <div class="escore">${escoreAnsiedade}</div>
+                            <div class="classificacao" style="background: #fce4ec; color: #c2185b;">${classAnsiedade}</div>
+                        </div>
+                        
+                        <div class="card-resultado">
+                            <h3>Estresse</h3>
+                            <div class="escore">${escoreEstresse}</div>
+                            <div class="classificacao" style="background: #e8f5e8; color: #388e3c;">${classEstresse}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="aviso">
+                        <strong>⚠️ Importante:</strong> Esta é uma ferramenta de triagem. Consulte um profissional de saúde mental para uma avaliação completa. Resultados elevados podem indicar necessidade de apoio profissional [citation:3].
+                    </div>
+                </div>
+            `;
+            
+            // Scroll suave até os resultados
+            divResultados.scrollIntoView({ behavior: 'smooth' });
+            
+            // Aqui você pode adicionar a lógica de salvar no banco de dados
+            console.log('Respostas:', respostas);
+            console.log('Escore Depressão:', escoreDepressao, classDepressao);
+            console.log('Escore Ansiedade:', escoreAnsiedade, classAnsiedade);
+            console.log('Escore Estresse:', escoreEstresse, classEstresse);
+        }
+     // ... (todo o código anterior permanece igual até a definição das escalas principais)
+
+    // ========== NOVO: Definição das subescalas ==========
+    const subescalas = {
+        depressao: {
+            disforia: [12, 15, 25, 30],          // itens 13,16,26,31
+            desesperanca: [9, 20, 37],            // itens 10,21,38
+            desvalorizacao: [2, 4, 33],           // itens 3,5,34
+            autodepreciacao: [16, 36, 41],        // itens 17,37,42
+            faltaInteresse: [23, 40]              // itens 24,41 (anedonia/inércia)
+        },
+        ansiedade: {
+            excitacaoAutonomica: [1, 3, 6, 8, 14, 18, 19, 22, 24, 27, 29, 35, 39, 40], // todos os 14 itens
+            muscular: [6],                         // item 7 (tremores)
+            situacional: [8, 27, 29],              // itens 9,28,30
+            subjetiva: [14, 18, 19, 35, 39, 40]    // itens 15,19,20,36,40,41
+        },
+        estresse: {
+            dificuldadeRelaxar: [11, 21, 26, 28, 31, 32], // itens 12,22,27,29,32,33
+            agitado: [5, 7, 10, 13, 17, 34, 38],          // itens 6,8,11,14,18,35,39
+            irritavel: [0, 12, 17, 31, 34, 38]            // itens 1,13,18,32,35,39
+        }
+    };
+
+    // Função que calcula todas as subescalas
+    function calcularSubescalas(respostas) {
+        const resultados = {};
+        for (let escala in subescalas) {
+            resultados[escala] = {};
+            for (let sub in subescalas[escala]) {
+                const itens = subescalas[escala][sub];
+                let bruto = 0;
+                itens.forEach(i => bruto += respostas[i]);
+                const nItens = itens.length;
+                const maxPossivel = nItens * 3;
+                const normalizado = (bruto / maxPossivel) * 10;
+                resultados[escala][sub] = {
+                    bruto: bruto,
+                    normalizado: normalizado.toFixed(1) // uma casa decimal
+                };
+            }
+        }
+        return resultados;
+    }
+
+    // Modifique a função calcularDASS() para incluir as subescalas
+    function calcularDASS() {
+        // ... (coleta das respostas igual ao código anterior)
+
+        // Calcular escores principais (já existente)
+        // ...
+
+        // NOVO: Calcular subescalas
+        const subResultados = calcularSubescalas(respostas);
+
+        // Exibir resultados (substitua o bloco de exibição anterior por este)
+        const divResultados = document.getElementById('resultados');
+        divResultados.style.display = 'block';
+        
+        let htmlSubescalas = '';
+        for (let escala in subResultados) {
+            htmlSubescalas += `<h4 style="margin-top:20px;">${escala.charAt(0).toUpperCase() + escala.slice(1)}</h4>`;
+            htmlSubescalas += '<table style="width:100%; border-collapse:collapse; margin-bottom:15px;">';
+            htmlSubescalas += '<tr><th style="text-align:left; border-bottom:1px solid #ddd;">Subescala</th><th style="text-align:center; border-bottom:1px solid #ddd;">Bruto</th><th style="text-align:center; border-bottom:1px solid #ddd;">Normalizado (0-10)</th></tr>';
+            for (let sub in subResultados[escala]) {
+                const subNome = sub.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // formata nome
+                htmlSubescalas += `<tr><td style="padding:5px 0;">${subNome}</td><td style="text-align:center;">${subResultados[escala][sub].bruto}</td><td style="text-align:center;">${subResultados[escala][sub].normalizado}</td></tr>`;
+            }
+            htmlSubescalas += '</table>';
+        }
+
+        divResultados.innerHTML = `
+            <div class="resultados">
+                <h2>Resultados Principais</h2>
+                <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+                    <div class="card-resultado">
+                        <h3>Depressão</h3>
+                        <div class="escore">${escoreDepressao}</div>
+                        <div class="classificacao">${classDepressao}</div>
+                    </div>
+                    <div class="card-resultado">
+                        <h3>Ansiedade</h3>
+                        <div class="escore">${escoreAnsiedade}</div>
+                        <div class="classificacao">${classAnsiedade}</div>
+                    </div>
+                    <div class="card-resultado">
+                        <h3>Estresse</h3>
+                        <div class="escore">${escoreEstresse}</div>
+                        <div class="classificacao">${classEstresse}</div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top:30px;">Detalhamento por Subescalas</h3>
+                ${htmlSubescalas}
+                
+                <div class="aviso">
+                    <strong>⚠️ Importante:</strong> Esta é uma ferramenta de triagem. Consulte um profissional de saúde mental para uma avaliação completa.
+                </div>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
