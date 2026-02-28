@@ -499,5 +499,25 @@
             divResultados.scrollIntoView({ behavior: 'smooth' });
         }
     </script>
+    <!-- Firebase SDK (versão compat, que funciona com firebase.auth()) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // Configuração do Firebase (com a chave corrigida)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDmXnNj2jOkpbYyG5M-7pBYweDQoaMhXyQ",
+    authDomain: "mens-sana-dass42.firebaseapp.com",
+    projectId: "mens-sana-dass42",
+    storageBucket: "mens-sana-dass42.firebasestorage.app",
+    messagingSenderId: "266383627883",
+    appId: "1:266383627883:web:7806c236726d29b0a8032e",
+    measurementId: "G-47TV45BSRW"
+  };
+
+  // Inicializa Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
 </body>
 </html>
